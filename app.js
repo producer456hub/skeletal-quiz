@@ -162,7 +162,7 @@
       const ok = isCorrect(q,picked);
       fb.hidden=false;
       fb.className='feedback '+(ok?'ok':'no');
-      fb.textContent = q.anyCorrect ? '✓ Correct! It’s always Dave.'
+      fb.textContent = q.anyCorrect ? '✓ You are a very smart person, but that question was really easy, given that Dave is always the coolest person where ever he goes. Let me just say you are really lucky to be in a class with him — I know I wish I was!'
         : (ok ? '✓ Correct!' : `✗ Not quite — the answer is ${LETTERS[q.a]}: ${q.o[q.a]}`);
     } else { fb.hidden=true; }
 
