@@ -12,6 +12,16 @@
   }));
   const mcq = QUESTIONS.map((q,i) => ({...q, num:i+1, tag:'Question ' + (i+1)}));
 
+  // Pinned warm-up — always question 1, every option is Dave, and Dave is correct.
+  const DAVE = {
+    q:'Who is the coolest person in this class?',
+    o:['Dave','Dave','Dave','Dave','Dave'],
+    a:0, anyCorrect:true, tag:'Warm-up'
+  };
+
+  // correctness helper (handles the all-Dave question where any pick is right)
+  const isCorrect = (q,pick) => pick!==null && (q.anyCorrect ? true : pick===q.a);
+
   const MODES = [
     {id:'full',  ic:'📚', title:'Full Quiz',     desc:'All 150 lecture questions',                  count:'150 Q'},
     {id:'slides',ic:'🔬', title:'Slide ID Round', desc:'Identify real slides + bone cells',           count:slideQuestions.length+' Q'},
@@ -32,7 +42,16 @@
     }
   }
 
-  const state = {list:[], i:0, picks:[], instant:true};
+  const state = {list:[], i:0, picks:[], instant:true, mode:'full'};
+
+  // build the question list for a mode, with Dave always pinned first
+  function buildList(modeId){
+    let list = poolFor(modeId);
+    if($('#opt-shuffle').checked) list = shuffle(list.slice());
+    else list = list.slice();
+    list.unshift(DAVE);
+    return list;
+  }
 
   /* ---------- start screen ---------- */
   function buildModes(){
@@ -64,11 +83,10 @@
   }
 
   function startQuiz(modeId){
-    let list = poolFor(modeId);
-    if($('#opt-shuffle').checked) list = shuffle(list.slice());
-    state.list = list;
+    state.mode = modeId;
+    state.list = buildList(modeId);
     state.i = 0;
-    state.picks = new Array(list.length).fill(null);
+    state.picks = new Array(state.list.length).fill(null);
     state.instant = $('#opt-instant').checked;
     show('quiz');
     render();
@@ -86,7 +104,7 @@
     const q = state.list[state.i];
     const n = state.list.length;
     $('#q-counter').textContent = `${state.i+1} / ${n}`;
-    const correctSoFar = state.picks.filter((p,idx)=>p!==null && p===state.list[idx].a).length;
+    const correctSoFar = state.picks.filter((p,idx)=>isCorrect(state.list[idx],p)).length;
     $('#q-score').textContent = `${correctSoFar} correct`;
     $('#progress-fill').style.width = ((state.i)/n*100)+'%';
 
@@ -128,7 +146,9 @@
       if(picked!==null){
         b.classList.add('locked');
         if(state.instant){
-          if(idx===q.a) b.classList.add('correct');
+          if(q.anyCorrect){
+            if(idx===picked) b.classList.add('correct'); else b.classList.add('dim');
+          } else if(idx===q.a) b.classList.add('correct');
           else if(idx===picked) b.classList.add('wrong');
           else b.classList.add('dim');
         } else if(idx===picked){ b.classList.add('selected'); }
@@ -139,10 +159,11 @@
     // feedback
     const fb=$('#feedback');
     if(picked!==null && state.instant){
-      const ok = picked===q.a;
+      const ok = isCorrect(q,picked);
       fb.hidden=false;
       fb.className='feedback '+(ok?'ok':'no');
-      fb.textContent = ok ? '✓ Correct!' : `✗ Not quite — the answer is ${LETTERS[q.a]}: ${q.o[q.a]}`;
+      fb.textContent = q.anyCorrect ? '✓ Correct! It’s always Dave.'
+        : (ok ? '✓ Correct!' : `✗ Not quite — the answer is ${LETTERS[q.a]}: ${q.o[q.a]}`);
     } else { fb.hidden=true; }
 
     // nav state
@@ -171,7 +192,7 @@
   /* ---------- results ---------- */
   function finish(){
     const total=state.list.length;
-    const correct=state.picks.filter((p,idx)=>p!==null && p===state.list[idx].a).length;
+    const correct=state.picks.filter((p,idx)=>isCorrect(state.list[idx],p)).length;
     const pct=Math.round(correct/total*100);
     show('results');
     $('#progress-fill').style.width='100%';
@@ -204,16 +225,19 @@
     list.innerHTML='';
     state.list.forEach((q,idx)=>{
       const pick=state.picks[idx];
-      const ok = pick!==null && pick===q.a;
+      const ok = isCorrect(q,pick);
       const el=document.createElement('div');
       el.className='rev';
       const youLine = pick===null
         ? `<div class="ra you-wrong">Skipped</div>`
         : (ok ? '' : `<div class="ra you-wrong">Your answer — ${LETTERS[pick]}: ${q.o[pick]}</div>`);
+      const correctLine = q.anyCorrect
+        ? `<div class="ra correct">Correct — Dave (obviously)</div>`
+        : `<div class="ra correct">Correct — ${LETTERS[q.a]}: ${q.o[q.a]}</div>`;
       el.innerHTML=`<div class="num">${ok?'✓':'✗'} ${q.tag||('Q'+(idx+1))}</div>
         <div class="rq">${q.q}</div>
         ${youLine}
-        <div class="ra correct">Correct — ${LETTERS[q.a]}: ${q.o[q.a]}</div>`;
+        ${correctLine}`;
       list.appendChild(el);
     });
   }
@@ -229,8 +253,8 @@
       $('#btn-review').textContent = rl.hidden?'Review answers':'Hide review';
       if(!rl.hidden) rl.scrollIntoView({behavior:'smooth'});
     };
-    $('#btn-retry').onclick=()=>{ state.i=0; state.picks=state.picks.map(()=>null); show('quiz');
-      if($('#opt-shuffle').checked) state.list=shuffle(state.list.slice()); render(); };
+    $('#btn-retry').onclick=()=>{ state.list=buildList(state.mode); state.i=0;
+      state.picks=new Array(state.list.length).fill(null); show('quiz'); render(); };
     $('#btn-home').onclick=()=>show('start');
 
     // keyboard: 1-5 / A-E to answer, Enter for next
