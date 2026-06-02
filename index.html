@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bone &amp; Skeletal System · Histology Quiz</title>
+<meta name="description" content="Interactive multiple-choice quiz on the skeletal system, bone tissue & histology — Weeks 7–9. Includes a slide-identification round using real virtual-microscope slides from histologyguide.com.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="bg-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<main id="app" class="app">
+
+  <!-- ============ START SCREEN ============ -->
+  <section id="screen-start" class="screen active">
+    <header class="hero">
+      <div class="badge">🦴 Anatomy &amp; Physiology · Weeks 7–9</div>
+      <h1>Bone &amp; Skeletal System<span class="grad"> Histology Quiz</span></h1>
+      <p class="sub">150 lecture questions plus a virtual-microscope slide round. Pick a mode, lock in your answers, and see how you stack up.</p>
+    </header>
+
+    <div class="mode-grid" id="mode-grid"></div>
+
+    <div class="opts">
+      <label class="toggle">
+        <input type="checkbox" id="opt-shuffle" checked>
+        <span class="track"></span>
+        <span class="lbl">Shuffle questions</span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="opt-instant" checked>
+        <span class="track"></span>
+        <span class="lbl">Instant feedback</span>
+      </label>
+    </div>
+
+    <p class="credit">Slide images &amp; virtual microscopy courtesy of <a href="https://histologyguide.com" target="_blank" rel="noopener">histologyguide.com</a> (University of Michigan).</p>
+  </section>
+
+  <!-- ============ QUIZ SCREEN ============ -->
+  <section id="screen-quiz" class="screen">
+    <div class="topbar">
+      <button class="ghost-btn" id="btn-quit">← Exit</button>
+      <div class="progress-wrap">
+        <div class="progress-meta"><span id="q-counter">1 / 50</span><span id="q-score">0 correct</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="card" id="question-card">
+      <div class="q-tag" id="q-tag"></div>
+      <h2 class="q-text" id="q-text"></h2>
+      <div class="slide-box" id="slide-box" hidden></div>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback" hidden></div>
+    </div>
+
+    <div class="navbar">
+      <button class="ghost-btn" id="btn-skip">Skip</button>
+      <button class="primary-btn" id="btn-next" disabled>Next →</button>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS SCREEN ============ -->
+  <section id="screen-results" class="screen">
+    <div class="result-card">
+      <div class="score-ring" id="score-ring">
+        <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fg" id="ring-fg" cx="60" cy="60" r="52"/></svg>
+        <div class="score-num"><span id="score-pct">0%</span><small id="score-frac">0 / 0</small></div>
+      </div>
+      <h2 id="result-title">Nice work!</h2>
+      <p id="result-msg" class="sub"></p>
+      <div class="result-actions">
+        <button class="primary-btn" id="btn-review">Review answers</button>
+        <button class="ghost-btn" id="btn-retry">Try again</button>
+        <button class="ghost-btn" id="btn-home">Home</button>
+      </div>
+    </div>
+    <div class="review-list" id="review-list" hidden></div>
+  </section>
+
+</main>
+
+<footer class="foot">Built for studying · not affiliated with histologyguide.com</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
