@@ -100,9 +100,13 @@
   }
 
   /* ---------- render a question ---------- */
-  function render(){
+  function render(isNew){
     const q = state.list[state.i];
     const n = state.list.length;
+    if(isNew !== false){ // replay card entrance animation on a new question
+      const c = $('#question-card');
+      c.classList.remove('q-anim'); void c.offsetWidth; c.classList.add('q-anim');
+    }
     $('#q-counter').textContent = `${state.i+1} / ${n}`;
     const correctSoFar = state.picks.filter((p,idx)=>isCorrect(state.list[idx],p)).length;
     $('#q-score').textContent = `${correctSoFar} correct`;
@@ -160,7 +164,7 @@
     const fb=$('#feedback');
     if(picked!==null && q.anyCorrect){
       fb.hidden=false;
-      fb.className='feedback ok';
+      fb.className='feedback dave';
       fb.textContent = '✓ You are a very smart person, but that question was really easy, given that Dave is always the coolest person where ever he goes. Let me just say you are really lucky to be in a class with him — I know I wish I was!';
     } else if(picked!==null && state.instant){
       const ok = isCorrect(q,picked);
@@ -178,8 +182,29 @@
   function choose(idx){
     const already = state.picks[state.i]!==null;
     if(already && state.instant) return; // locked once answered in instant mode
+    const wasUnanswered = state.picks[state.i]===null;
     state.picks[state.i]=idx;
-    render();
+    if(wasUnanswered && state.list[state.i].anyCorrect) confetti(70); // Dave gets a celebration
+    render(false);
+  }
+
+  /* ---------- confetti ---------- */
+  function confetti(count){
+    const host = document.getElementById('confetti');
+    if(!host) return;
+    const colors=['#8b5cff','#22d3ee','#ff5d9e','#ffcf5c','#34d399'];
+    for(let i=0;i<count;i++){
+      const bit=document.createElement('span');
+      bit.className='confetti-bit';
+      bit.style.left=Math.random()*100+'vw';
+      bit.style.background=colors[i%colors.length];
+      bit.style.animationDuration=(1.6+Math.random()*1.6)+'s';
+      bit.style.animationDelay=(Math.random()*.35)+'s';
+      bit.style.transform=`scale(${0.7+Math.random()*0.9})`;
+      bit.style.opacity=String(0.7+Math.random()*0.3);
+      host.appendChild(bit);
+      setTimeout(()=>bit.remove(),3600);
+    }
   }
 
   /* ---------- navigation ---------- */
@@ -218,6 +243,7 @@
     else {title='Study session time. 📚';msg="No stress — review the answers below, then take another pass.";}
     $('#result-title').textContent=title;
     $('#result-msg').textContent=msg;
+    if(pct>=70) setTimeout(()=>confetti(pct>=90?140:90), 350);
 
     buildReview();
     $('#review-list').hidden=true;
